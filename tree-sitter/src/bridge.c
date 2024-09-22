@@ -13,6 +13,7 @@ typedef struct Node {
   const char *fieldName;
   bool     isNamed;
   bool     isExtra;
+  bool     isMissing;
 } Node;
 
 void log_to_stdout(void *payload, TSLogType type, const char *message) {
@@ -33,6 +34,7 @@ static inline void ts_node_poke(const char *fieldName, TSNode node, Node *out) {
   out->fieldName = fieldName;
   out->isNamed = ts_node_is_named(node);
   out->isExtra = ts_node_is_extra(node);
+  out->isMissing = ts_node_is_missing(node);
 }
 
 void ts_node_poke_p(TSNode *node, Node *out) {
@@ -122,4 +124,9 @@ uint32_t ts_tree_cursor_copy_child_nodes(TSTreeCursor *cursor, Node *outChildNod
     ts_tree_cursor_goto_parent(cursor);
   }
   return count;
+}
+
+char *ts_node_string_p(TSNode *self) {
+  assert(self != NULL);
+  return ts_node_string(*self);
 }

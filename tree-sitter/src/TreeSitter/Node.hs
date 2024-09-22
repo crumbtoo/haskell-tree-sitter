@@ -7,6 +7,7 @@ module TreeSitter.Node
 , TSPoint(..)
 , TSNode(..)
 , FieldId(..)
+, ts_node_string_p
 , ts_node_copy_child_nodes
 , ts_node_poke_p
 
@@ -30,6 +31,7 @@ data Node = Node
   , nodeFieldName  :: !CString
   , nodeIsNamed    :: !CBool
   , nodeIsExtra    :: !CBool
+  , nodeIsMissing  :: !CBool
   }
   deriving (Show, Eq, Generic)
 
@@ -85,8 +87,9 @@ instance Storable Node where
                            <*> peekStruct
                            <*> peekStruct
                            <*> peekStruct
+                           <*> peekStruct
   {-# INLINE peek #-}
-  poke ptr (Node n t s ep eb c fn nn ne) = flip evalStruct ptr $ do
+  poke ptr (Node n t s ep eb c fn nn ne nm) = flip evalStruct ptr $ do
     pokeStruct n
     pokeStruct t
     pokeStruct s
@@ -96,6 +99,7 @@ instance Storable Node where
     pokeStruct fn
     pokeStruct nn
     pokeStruct ne
+    pokeStruct nm
   {-# INLINE poke #-}
 
 instance Storable TSPoint where
@@ -168,3 +172,4 @@ instance Monad Struct where
 foreign import ccall unsafe "src/bridge.c ts_node_copy_child_nodes" ts_node_copy_child_nodes :: Ptr TSNode -> Ptr Node -> IO ()
 -- NB: this leaves the field name as NULL.
 foreign import ccall unsafe "src/bridge.c ts_node_poke_p" ts_node_poke_p :: Ptr TSNode -> Ptr Node -> IO ()
+foreign import ccall unsafe "src/bridge.c ts_node_string_p" ts_node_string_p :: Ptr Node -> IO CString
